@@ -108,7 +108,17 @@ def test_us2_signin_sets_httponly_lax_400_day_cookie_without_secure(client):
 
     assert resp.status_code == 200
     assert resp.json()["email"] == "alice@example.test"
-    header = resp.headers["set-cookie"]
+    assert_session_cookie(resp.headers["set-cookie"])
+
+
+def test_us1_signup_sets_the_same_httponly_lax_400_day_cookie_without_secure(client):
+    resp = signup(client)
+
+    assert resp.status_code == 201
+    assert_session_cookie(resp.headers["set-cookie"])
+
+
+def assert_session_cookie(header: str) -> None:
     assert header.startswith("sid=")
     assert "httponly" in header.lower()
     assert "samesite=lax" in header.lower()
@@ -215,8 +225,9 @@ def test_us3_budgets_list_excludes_other_users_budgets(client):
 
 def test_us2_main_serves_the_app_on_loopback_8000(tmp_path, monkeypatch):
     import uvicorn
-    from budget_app.__main__ import main
     from fastapi import FastAPI
+
+    from budget_app.__main__ import main
 
     db = tmp_path / "x.db"
     monkeypatch.setenv("BUDGET_DB", str(db))
