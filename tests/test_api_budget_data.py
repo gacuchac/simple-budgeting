@@ -194,3 +194,89 @@ def test_put_one_off_with_recurring_rule_is_422_and_leaves_entry(client, base):
     created = client.post(f"{base}/entries", json=entry_body(rule=one_off("2026-03-01"))).json()
     assert client.put(f"{base}/entries/{created['id']}", json=entry_body()).status_code == 422
     assert client.get(f"{base}/entries").json() == [created]
+
+
+def set_limit(client, base: str, category: str, amount_cents: int, period: str):
+    body = {"category_id": category_id(client, base, "expense", category), "amount_cents": amount_cents}
+    return client.put(f"{base}/limits", json=body | {"period": period})
+
+
+def spend(client, base: str, category: str, amount_cents: int, day: str) -> int:
+    body = entry_body(amount_cents=amount_cents, category_id=category_id(client, base, "expense", category))
+    return client.post(f"{base}/entries", json=body | {"rule": one_off(day)}).json()["id"]
+
+
+def check(client, base: str, category: str, day: str, amount_cents: int, **extra) -> dict:
+    params = {"category_id": category_id(client, base, "expense", category), "date": day, "amount_cents": amount_cents}
+    return client.get(f"{base}/limits/check", params=params | extra).json()["status"]
+
+
+def test_limits_set_list_replace_delete(client, base):
+    first = set_limit(client, base, "Food", 20000, "week")
+    assert first.status_code == 200
+    replaced = set_limit(client, base, "Food", 30000, "month").json()
+    assert replaced["id"] == first.json()["id"]
+    assert client.get(f"{base}/limits").json() == [replaced]
+    assert replaced["amount_cents"] == 30000 and replaced["period"] == "month"
+
+    salary = category_id(client, base, "income", "Salary")
+    body = {"category_id": salary, "amount_cents": 100, "period": "day"}
+    assert client.put(f"{base}/limits", json=body).status_code == 422
+
+    assert client.delete(f"{base}/limits/{replaced['id']}").status_code == 204
+    assert client.delete(f"{base}/limits/{replaced['id']}").status_code == 404
+    assert client.get(f"{base}/limits").json() == []
+
+
+def test_deleting_a_category_deletes_its_limit(client, base):
+    set_limit(client, base, "Food", 20000, "week")
+    assert client.delete(f"{base}/categories/{category_id(client, base, 'expense', 'Food')}").status_code == 204
+    assert client.get(f"{base}/limits").json() == []
+
+
+def test_dashboard_limit_status_prorates_by_calendar(client, base):
+    set_limit(client, base, "Food", 50000, "month")
+    set_limit(client, base, "Health", 7000, "week")
+    spend(client, base, "Food", 60000, "2026-02-10")
+    spend(client, base, "Health", 1000, "2026-02-10")
+
+    february = client.get(f"{base}/dashboard", params={"start": "2026-02-01", "end": "2026-02-28"}).json()["limits"]
+    assert sorted((s["allowed_cents"], s["spent_cents"], s["over"]) for s in february) == [
+        (7000 * 4, 1000, False),
+        (50000, 60000, True),
+    ]
+
+    week = client.get(f"{base}/dashboard", params={"start": "2026-02-09", "end": "2026-02-15"}).json()["limits"]
+    assert sorted(s["allowed_cents"] for s in week) == [7000, 50000 * 7 // 28]
+
+
+def test_limit_check_decision_two_example(client, base):
+    set_limit(client, base, "Food", 20000, "week")
+    spend(client, base, "Food", 15000, "2026-11-23")
+
+    over = check(client, base, "Food", "2026-11-25", 6000)
+    assert over["over"] is True
+    assert (over["allowed_cents"], over["spent_cents"]) == (20000, 21000)
+    assert check(client, base, "Food", "2026-11-25", 4000)["over"] is False
+    assert check(client, base, "Food", "2026-12-02", 6000)["spent_cents"] == 6000
+
+
+def test_limit_check_exclude_entry_and_no_limit(client, base):
+    assert check(client, base, "Food", "2026-11-25", 100) is None
+    set_limit(client, base, "Food", 20000, "week")
+    entry_id = spend(client, base, "Food", 15000, "2026-11-25")
+
+    assert check(client, base, "Food", "2026-11-25", 6000)["spent_cents"] == 21000
+    excluded = check(client, base, "Food", "2026-11-25", 6000, exclude_entry_id=entry_id)
+    assert (excluded["spent_cents"], excluded["over"]) == (6000, False)
+
+
+def test_limit_check_is_not_shadowed_and_validates(client, base):
+    food = category_id(client, base, "expense", "Food")
+    params = {"category_id": food, "date": "2026-11-25", "amount_cents": 100}
+    assert client.get(f"{base}/limits/check", params=params).json() == {"status": None}
+    assert client.get(f"{base}/limits/check", params=params | {"amount_cents": -1}).status_code == 422
+    assert client.get(f"{base}/limits/check", params=params | {"date": "soon"}).status_code == 422
+    assert client.get(f"{base}/limits/check", params=params | {"exclude_entry_id": 999}).status_code == 422
+    salary = category_id(client, base, "income", "Salary")
+    assert client.get(f"{base}/limits/check", params=params | {"category_id": salary}).status_code == 422

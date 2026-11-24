@@ -15,10 +15,12 @@ from budget_app.domain.dashboard import (
     cumulative,
     donut,
 )
+from budget_app.domain.limits import LimitStatus
 from budget_app.domain.periods import DateRange, PeriodSpec
 from budget_app.domain.recurrence import occurrences
 from budget_app.repos import categories, entries
 from budget_app.repos.entries import Entry
+from budget_app.services import limits
 
 UNCATEGORIZED = "Uncategorized"
 
@@ -34,6 +36,7 @@ class Dashboard:
     unit: BucketUnit
     income_points: list[Point]
     expense_points: list[Point]
+    limits: list[LimitStatus]
 
 
 def _events(all_entries: list[Entry], kind: str, rng: DateRange) -> list[tuple[dt.date, int, int | None]]:
@@ -45,10 +48,14 @@ def _events(all_entries: list[Entry], kind: str, rng: DateRange) -> list[tuple[d
     ]
 
 
-def _slices(expenses: list[tuple[dt.date, int, int | None]], names: dict[int, str]) -> list[Slice]:
+def _totals(expenses: list[tuple[dt.date, int, int | None]]) -> dict[int | None, int]:
     totals: dict[int | None, int] = {}
     for _, cents, category_id in expenses:
         totals[category_id] = totals.get(category_id, 0) + cents
+    return totals
+
+
+def _slices(totals: dict[int | None, int], names: dict[int, str]) -> list[Slice]:
     ordered = sorted(totals, key=lambda c: (c is None, c))
     return [Slice(c, UNCATEGORIZED if c is None else names[c], totals[c]) for c in ordered]
 
@@ -61,12 +68,14 @@ def build(conn: sqlite3.Connection, access: BudgetAccess, spec: PeriodSpec, toda
     expenses = _events(all_entries, "expense", rng)
     names = {c.id: c.name for c in categories.list_for(conn, access)}
     income_cents = sum(cents for _, cents, _ in income)
+    totals = _totals(expenses)
     return Dashboard(
         range=rng,
         income_cents=income_cents,
         expense_cents=sum(cents for _, cents, _ in expenses),
-        donut=donut(income_cents, _slices(expenses, names)),
+        donut=donut(income_cents, _slices(totals, names)),
         unit=bucket_unit(rng),
         income_points=cumulative([(d, c) for d, c, _ in income], rng),
         expense_points=cumulative([(d, c) for d, c, _ in expenses], rng),
+        limits=limits.statuses(conn, access, rng, totals),
     )
