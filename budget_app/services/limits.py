@@ -73,7 +73,7 @@ def check(
 ) -> LimitStatus | None:
     """Return the status of the category's limit over its own period containing `day`, counting `amount_cents` once more.
 
-    The category's expenses in that period exclude every occurrence of `exclude_entry_id`.
+    The category's expenses in that period leave out the entry `exclude_entry_id` if it is one of them (contract 10).
     Returns None when the category has no limit; raises InvalidLimit for a category that is not an expense category
     of the budget, an unknown entry or a negative amount.
     """

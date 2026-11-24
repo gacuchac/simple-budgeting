@@ -271,6 +271,15 @@ def test_limit_check_exclude_entry_and_no_limit(client, base):
     assert (excluded["spent_cents"], excluded["over"]) == (6000, False)
 
 
+def test_limit_check_excluded_entry_from_another_category_is_not_subtracted(client, base):
+    set_limit(client, base, "Health", 20000, "week")
+    spend(client, base, "Health", 3000, "2026-11-24")
+    moving = spend(client, base, "Food", 5000, "2026-11-25")
+
+    moved = check(client, base, "Health", "2026-11-25", 5000, exclude_entry_id=moving)
+    assert moved["spent_cents"] == 3000 + 5000
+
+
 def test_limit_check_is_not_shadowed_and_validates(client, base):
     food = category_id(client, base, "expense", "Food")
     params = {"category_id": food, "date": "2026-11-25", "amount_cents": 100}

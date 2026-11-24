@@ -33,3 +33,7 @@ The user's decisions in I3, in order, in their words.
 ## 8. Undecided defaults in PRD section 12
 - Question: change any of the eight defaults (warning doesn't block; "last N" ends today; weeks start Monday; one limit per category; re-invite after decline; creator can't remove members; no note on entries; browser test local only)?
 - Answer: "it's ok" (both groups). All eight defaults stand.
+
+## 9. Contract 10: what exclude_entry_id leaves out (asked 2026-11-24, during bud-10)
+- Question: contract 10 said "minus every occurrence of exclude_entry_id". When an edit moves an expense to another category, that subtracts money never counted in the new category. Reword it to "leaving out the entry exclude_entry_id if it is one of them"?
+- Answer: "Approve the rewording (Recommended)". It went through the architecture skill; the proposal is in `.claude/runs/budget-app/first-version/history/`.
