@@ -2,6 +2,7 @@
 
 import sqlite3
 
+from budget_app.domain.access import BudgetAccess
 from budget_app.repos.users import UserId
 
 
@@ -11,3 +12,13 @@ def add(conn: sqlite3.Connection, budget_id: int, user_id: UserId, role: str) ->
         "INSERT INTO memberships (budget_id, user_id, role) VALUES (?, ?, ?)",
         (budget_id, user_id, role),
     )
+
+
+def access_for(conn: sqlite3.Connection, budget_id: int, user_id: UserId) -> BudgetAccess | None:
+    """Return the access `user_id` has to `budget_id`, or None when they are not a member."""
+    row = conn.execute(
+        "SELECT m.role, b.kind = 'personal' FROM memberships m JOIN budgets b ON b.id = m.budget_id"
+        " WHERE m.budget_id = ? AND m.user_id = ?",
+        (budget_id, user_id),
+    ).fetchone()
+    return None if row is None else BudgetAccess(budget_id, user_id, row[0], bool(row[1]))

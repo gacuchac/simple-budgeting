@@ -24,6 +24,142 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/budgets/{budget_id}/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Categories
+         * @description Return the budget's categories.
+         */
+        get: operations["list_categories_api_budgets__budget_id__categories_get"];
+        put?: never;
+        /**
+         * Add Category
+         * @description Add a category; 409 when the name exists for the kind.
+         */
+        post: operations["add_category_api_budgets__budget_id__categories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budgets/{budget_id}/categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Rename Category
+         * @description Rename a category; 404 when it is not in the budget, 409 when the name exists for the kind.
+         */
+        put: operations["rename_category_api_budgets__budget_id__categories__category_id__put"];
+        post?: never;
+        /**
+         * Delete Category
+         * @description Delete a category; its entries become uncategorized; 404 when it is not in the budget.
+         */
+        delete: operations["delete_category_api_budgets__budget_id__categories__category_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budgets/{budget_id}/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Dashboard
+         * @description Return the dashboard for `?last=&unit=` or `?start=&end=`, "today" being the local date; 422 for a bad period.
+         */
+        get: operations["get_dashboard_api_budgets__budget_id__dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budgets/{budget_id}/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Entries
+         * @description Return the budget's entries.
+         */
+        get: operations["list_entries_api_budgets__budget_id__entries_get"];
+        put?: never;
+        /**
+         * Create Entry
+         * @description Create an entry; 422 for a bad amount, source, category or rule.
+         */
+        post: operations["create_entry_api_budgets__budget_id__entries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budgets/{budget_id}/entries/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Replace One Off
+         * @description Replace a one-off entry; 404 when it is not in the budget, 422 for a recurring entry or a bad body.
+         */
+        put: operations["replace_one_off_api_budgets__budget_id__entries__entry_id__put"];
+        post?: never;
+        /**
+         * Delete Entry
+         * @description Delete an entry and its whole series; 404 when it is not in the budget.
+         */
+        delete: operations["delete_entry_api_budgets__budget_id__entries__entry_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budgets/{budget_id}/entries/{entry_id}/split": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Split Entry
+         * @description Edit a recurring entry from `at`; 404 when it is not in the budget, 422 for a one-off or `at` after its end.
+         */
+        post: operations["split_entry_api_budgets__budget_id__entries__entry_id__split_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me": {
         parameters: {
             query?: never;
@@ -139,6 +275,44 @@ export interface components {
             role: "editor" | "viewer";
         };
         /**
+         * CategoryIn
+         * @description A new category.
+         */
+        CategoryIn: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "income" | "expense";
+            /** Name */
+            name: string;
+        };
+        /**
+         * CategoryOut
+         * @description One category of a budget.
+         */
+        CategoryOut: {
+            /** Budget Id */
+            budget_id: number;
+            /** Id */
+            id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "income" | "expense";
+            /** Name */
+            name: string;
+        };
+        /**
+         * CategoryRename
+         * @description The new name of a category.
+         */
+        CategoryRename: {
+            /** Name */
+            name: string;
+        };
+        /**
          * Credentials
          * @description Email and password as typed by the user.
          */
@@ -148,10 +322,240 @@ export interface components {
             /** Password */
             password: string;
         };
+        /**
+         * DashboardOut
+         * @description The dashboard of a budget for one range (limits arrive with the limits feature).
+         */
+        DashboardOut: {
+            donut: components["schemas"]["DonutOut"];
+            /** Expense Cents */
+            expense_cents: number;
+            /** Income Cents */
+            income_cents: number;
+            /** Limits */
+            limits?: {
+                [key: string]: unknown;
+            }[];
+            lines: components["schemas"]["LinesOut"];
+            range: components["schemas"]["RangeOut"];
+        };
+        /**
+         * DonutOut
+         * @description The donut chart's numbers.
+         */
+        DonutOut: {
+            /** Mark Cents */
+            mark_cents: number | null;
+            /** Remaining Cents */
+            remaining_cents: number;
+            /** Slices */
+            slices: components["schemas"]["SliceOut"][];
+            /** Total Cents */
+            total_cents: number;
+        };
+        /**
+         * EntryChanges
+         * @description Fields a split changes; fields left out stay as they are.
+         */
+        EntryChanges: {
+            /** Amount Cents */
+            amount_cents?: number | null;
+            /** Category Id */
+            category_id?: number | null;
+            /** Name */
+            name?: string | null;
+            /** Rule */
+            rule?: (components["schemas"]["EveryRule"] | components["schemas"]["MonthlyOnDayRule"]) | null;
+            /** Source */
+            source?: string | null;
+        };
+        /**
+         * EntryIn
+         * @description The body to create an entry or to replace a one-off.
+         */
+        EntryIn: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** Category Id */
+            category_id?: number | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "income" | "expense";
+            /** Name */
+            name: string;
+            /** Rule */
+            rule: components["schemas"]["OneOffRule"] | components["schemas"]["EveryRule"] | components["schemas"]["MonthlyOnDayRule"];
+            /** Source */
+            source?: string | null;
+        };
+        /**
+         * EntryOut
+         * @description An entry as stored.
+         */
+        EntryOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** Budget Id */
+            budget_id: number;
+            /** Category Id */
+            category_id?: number | null;
+            /** Id */
+            id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "income" | "expense";
+            /** Name */
+            name: string;
+            /** Rule */
+            rule: components["schemas"]["OneOffRule"] | components["schemas"]["EveryRule"] | components["schemas"]["MonthlyOnDayRule"];
+            /** Source */
+            source?: string | null;
+        };
+        /**
+         * EveryRule
+         * @description Every `n` days, weeks or months.
+         */
+        EveryRule: {
+            /** End */
+            end?: string | null;
+            /** N */
+            n: number;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "every";
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "day" | "week" | "month";
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * LinesOut
+         * @description The line chart's numbers.
+         */
+        LinesOut: {
+            /** Points */
+            points: components["schemas"]["PointOut"][];
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "day" | "week" | "month";
+        };
+        /**
+         * MonthlyOnDayRule
+         * @description Every month on `day`.
+         */
+        MonthlyOnDayRule: {
+            /** Day */
+            day: number;
+            /** End */
+            end?: string | null;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "monthly_on_day";
+        };
+        /**
+         * OneOffRule
+         * @description A single date.
+         */
+        OneOffRule: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "one_off";
+        };
+        /**
+         * PointOut
+         * @description Cumulative income and expense at the end of a bucket.
+         */
+        PointOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Expense Cum */
+            expense_cum: number;
+            /** Income Cum */
+            income_cum: number;
+        };
+        /**
+         * RangeOut
+         * @description Inclusive date range.
+         */
+        RangeOut: {
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+        };
+        /**
+         * SliceOut
+         * @description Expense total of one category.
+         */
+        SliceOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** Category Id */
+            category_id: number | null;
+            /** Name */
+            name: string;
+        };
+        /**
+         * SplitIn
+         * @description Edit a recurring entry from the date `at`.
+         */
+        SplitIn: {
+            /**
+             * At
+             * Format: date
+             */
+            at: string;
+            changes: components["schemas"]["EntryChanges"];
+        };
+        /**
+         * SplitOut
+         * @description The old entry (None after an in-place update) and the entry that applies from `at`.
+         */
+        SplitOut: {
+            current: components["schemas"]["EntryOut"];
+            previous: components["schemas"]["EntryOut"] | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -193,6 +597,362 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BudgetOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_categories_api_budgets__budget_id__categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_category_api_budgets__budget_id__categories_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_category_api_budgets__budget_id__categories__category_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: number;
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryRename"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_category_api_budgets__budget_id__categories__category_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: number;
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dashboard_api_budgets__budget_id__dashboard_get: {
+        parameters: {
+            query?: {
+                last?: number | null;
+                unit?: ("day" | "week" | "month" | "year") | null;
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_entries_api_budgets__budget_id__entries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_entry_api_budgets__budget_id__entries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_one_off_api_budgets__budget_id__entries__entry_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: number;
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_entry_api_budgets__budget_id__entries__entry_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: number;
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    split_entry_api_budgets__budget_id__entries__entry_id__split_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: number;
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SplitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SplitOut"];
                 };
             };
             /** @description Validation Error */
