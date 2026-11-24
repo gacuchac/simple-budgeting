@@ -153,3 +153,20 @@ def test_us3_ignores_files_not_matching_nnnn_pattern(tmp_path):
     assert migrate_from(conn, directory) == 1
     tables = {row[1] for row in schema(conn) if row[0] == "table"}
     assert tables == {"parent"}
+
+
+def test_us3_original_error_propagates_when_the_transaction_is_already_gone(tmp_path):
+    from budget_app.db.migrate import migrate_from
+
+    ends_then_fails = "ROLLBACK;\nTHIS IS NOT SQL;\n"
+    directory = write_migrations(tmp_path / "m", {"0001_first.sql": FIRST})
+    conn = connect(tmp_path / "db.sqlite3")
+    migrate_from(conn, directory)
+    write_migrations(directory, {"0002_ends_tx.sql": ends_then_fails})
+
+    with pytest.raises(sqlite3.OperationalError, match="syntax error"):
+        migrate_from(conn, directory)
+
+    assert user_version(conn) == 1
+    assert conn.in_transaction is False
+    assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
