@@ -3,6 +3,16 @@ import type { components } from './schema'
 export type Account = components['schemas']['AccountOut']
 export type Budget = components['schemas']['BudgetOut']
 export type Credentials = components['schemas']['Credentials']
+export type Category = components['schemas']['CategoryOut']
+export type CategoryIn = components['schemas']['CategoryIn']
+export type Entry = components['schemas']['EntryOut']
+export type EntryIn = components['schemas']['EntryIn']
+export type EntryChanges = components['schemas']['EntryChanges']
+export type Rule = EntryIn['rule']
+export type SplitResult = components['schemas']['SplitOut']
+export type Dashboard = components['schemas']['DashboardOut']
+export type PeriodUnit = 'day' | 'week' | 'month' | 'year'
+export type DashboardPeriod = { last: number; unit: PeriodUnit } | { start: string; end: string }
 
 export const SIGN_IN_PATH = '/signin'
 
@@ -39,10 +49,32 @@ async function request<T>(method: string, path: string, body?: unknown, redirect
   return response.status === 204 ? (undefined as T) : ((await response.json()) as T)
 }
 
+function periodQuery(period: DashboardPeriod): string {
+  const params: Record<string, string> = 'last' in period ? { last: String(period.last), unit: period.unit } : { start: period.start, end: period.end }
+  return new URLSearchParams(params).toString()
+}
+
+const entriesPath = (budgetId: number) => `/api/budgets/${budgetId}/entries`
+const categoriesPath = (budgetId: number) => `/api/budgets/${budgetId}/categories`
+
 export const api = {
   me: () => request<Account>('GET', '/api/me'),
   budgets: () => request<Budget[]>('GET', '/api/budgets'),
   signUp: (credentials: Credentials) => request<Account>('POST', '/api/signup', credentials, false),
   signIn: (credentials: Credentials) => request<Account>('POST', '/api/signin', credentials, false),
   signOut: () => request<void>('POST', '/api/signout'),
+  categories: (budgetId: number) => request<Category[]>('GET', categoriesPath(budgetId)),
+  addCategory: (budgetId: number, body: CategoryIn) => request<Category>('POST', categoriesPath(budgetId), body),
+  renameCategory: (budgetId: number, id: number, name: string) =>
+    request<Category>('PUT', `${categoriesPath(budgetId)}/${id}`, { name }),
+  deleteCategory: (budgetId: number, id: number) => request<void>('DELETE', `${categoriesPath(budgetId)}/${id}`),
+  entries: (budgetId: number) => request<Entry[]>('GET', entriesPath(budgetId)),
+  addEntry: (budgetId: number, body: EntryIn) => request<Entry>('POST', entriesPath(budgetId), body),
+  replaceEntry: (budgetId: number, id: number, body: EntryIn) =>
+    request<Entry>('PUT', `${entriesPath(budgetId)}/${id}`, body),
+  deleteEntry: (budgetId: number, id: number) => request<void>('DELETE', `${entriesPath(budgetId)}/${id}`),
+  splitEntry: (budgetId: number, id: number, at: string, changes: EntryChanges) =>
+    request<SplitResult>('POST', `${entriesPath(budgetId)}/${id}/split`, { at, changes }),
+  dashboard: (budgetId: number, period: DashboardPeriod) =>
+    request<Dashboard>('GET', `/api/budgets/${budgetId}/dashboard?${periodQuery(period)}`),
 }
