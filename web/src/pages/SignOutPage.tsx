@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSignOut } from '../hooks/useAuth'
 
 export function SignOutPage() {
   const signOut = useSignOut()
+  const started = useRef(false)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
+    if (started.current) return
+    started.current = true
     signOut().then(
       () => window.location.assign('/signin'),
       () => setFailed(true),
