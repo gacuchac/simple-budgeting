@@ -17,7 +17,11 @@ export interface paths {
          */
         get: operations["list_budgets_api_budgets_get"];
         put?: never;
-        post?: never;
+        /**
+         * Create Budget
+         * @description Create a shared budget with the caller as its editor and the default categories.
+         */
+        post: operations["create_budget_api_budgets_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -160,6 +164,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/budgets/{budget_id}/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Invites
+         * @description Return the budget's pending invites.
+         */
+        get: operations["list_invites_api_budgets__budget_id__invites_get"];
+        put?: never;
+        /**
+         * Invite
+         * @description Invite an email; 409 for a personal budget, a member or a pending invite, 422 for a bad email.
+         */
+        post: operations["invite_api_budgets__budget_id__invites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budgets/{budget_id}/invites/{invite_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoke Invite
+         * @description Revoke a pending invite; 404 when it is not one of the budget's, 403 for a viewer's others' invites.
+         */
+        delete: operations["revoke_invite_api_budgets__budget_id__invites__invite_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/budgets/{budget_id}/limits": {
         parameters: {
             query?: never;
@@ -221,6 +269,66 @@ export interface paths {
          * @description Delete a limit; 404 when it is not in the budget.
          */
         delete: operations["delete_limit_api_budgets__budget_id__limits__limit_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Invites
+         * @description Return the pending invites addressed to the caller's email.
+         */
+        get: operations["my_invites_api_invites_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invites/{invite_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Invite
+         * @description Join the invite's budget as a viewer; 404 unless the invite is pending and addressed to the caller.
+         */
+        post: operations["accept_invite_api_invites__invite_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invites/{invite_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline Invite
+         * @description Decline the invite; 404 unless it is pending and addressed to the caller.
+         */
+        post: operations["decline_invite_api_invites__invite_id__decline_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -319,6 +427,14 @@ export interface components {
             email: string;
             /** Id */
             id: number;
+        };
+        /**
+         * BudgetIn
+         * @description A new shared budget.
+         */
+        BudgetIn: {
+            /** Name */
+            name: string;
         };
         /**
          * BudgetOut
@@ -508,6 +624,35 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * InviteIn
+         * @description The email to invite.
+         */
+        InviteIn: {
+            /** Email */
+            email: string;
+        };
+        /**
+         * InviteOut
+         * @description An invite with its budget and sender.
+         */
+        InviteOut: {
+            /** Budget Id */
+            budget_id: number;
+            /** Budget Name */
+            budget_name: string;
+            /** Email */
+            email: string;
+            /** Id */
+            id: number;
+            /** Invited By Email */
+            invited_by_email: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "accepted" | "declined";
         };
         /**
          * LimitCheckOut
@@ -718,6 +863,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BudgetOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_budget_api_budgets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BudgetIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
                 };
             };
             /** @description Validation Error */
@@ -1087,6 +1267,108 @@ export interface operations {
             };
         };
     };
+    list_invites_api_budgets__budget_id__invites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invite_api_budgets__budget_id__invites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_invite_api_budgets__budget_id__invites__invite_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invite_id: number;
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_limits_api_budgets__budget_id__limits_get: {
         parameters: {
             query?: never;
@@ -1202,6 +1484,101 @@ export interface operations {
             path: {
                 limit_id: number;
                 budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_invites_api_invites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_invite_api_invites__invite_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invite_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decline_invite_api_invites__invite_id__decline_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invite_id: number;
             };
             cookie?: {
                 sid?: string | null;

@@ -212,3 +212,26 @@ class DashboardOut(BaseModel):
     donut: DonutOut
     lines: LinesOut
     limits: list[LimitStatusOut]
+
+
+class BudgetIn(BaseModel):
+    """A new shared budget."""
+
+    name: Name
+
+
+class InviteIn(BaseModel):
+    """The email to invite."""
+
+    email: str
+
+
+class InviteOut(BaseModel):
+    """An invite with its budget and sender."""
+
+    id: int
+    budget_id: int
+    budget_name: str
+    email: str
+    invited_by_email: str
+    status: Literal["pending", "accepted", "declined"]
