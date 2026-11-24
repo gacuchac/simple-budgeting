@@ -67,22 +67,26 @@ export function EntryForm({ budgetId, kind, categories, entry, onDone, onCancel 
   }
 
   return (
-    <form role="dialog" aria-label={`${entry ? 'Edit' : 'Add'} ${kind}`} onSubmit={onSubmit}>
-      <label>Name <input value={name} onChange={(e) => setName(e.target.value)} required /></label>
-      <label>Amount (USD) <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} required /></label>
-      {kind === 'income' && <label>Source <input value={source} onChange={(e) => setSource(e.target.value)} /></label>}
-      <label>
-        Category{' '}
-        <select value={categoryId ?? ''} onChange={(e) => setCategoryId(e.target.value === '' ? null : Number(e.target.value))}>
-          {kind === 'expense' && <option value="">None</option>}
-          {options.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-      </label>
+    <form className="entry-form" role="dialog" aria-label={`${entry ? 'Edit' : 'Add'} ${kind}`} onSubmit={onSubmit}>
+      <div className="form-grid">
+        <label className="field">Name <input value={name} onChange={(e) => setName(e.target.value)} required /></label>
+        <label className="field">Amount (USD) <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} required /></label>
+        {kind === 'income' && <label className="field">Source <input value={source} onChange={(e) => setSource(e.target.value)} /></label>}
+        <label className="field">
+          Category{' '}
+          <select value={categoryId ?? ''} onChange={(e) => setCategoryId(e.target.value === '' ? null : Number(e.target.value))}>
+            {kind === 'expense' && <option value="">None</option>}
+            {options.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </label>
+      </div>
       <RuleEditor value={rule} onChange={setRule} shapes={editing ? (recurring ? 'recurring' : 'one_off') : 'all'} today={today} />
-      {recurring && <label>Apply changes from <input type="date" value={at} onChange={(e) => setAt(e.target.value)} required /></label>}
-      {error && <p role="alert">{error}</p>}
-      <button type="submit" disabled={write.busy}>Save</button>
-      <button type="button" onClick={onCancel}>Cancel</button>
+      {recurring && <label className="field">Apply changes from <input type="date" value={at} onChange={(e) => setAt(e.target.value)} required /></label>}
+      {error && <p className="alert" role="alert">{error}</p>}
+      <div className="form-actions">
+        <button type="submit" disabled={write.busy}>Save</button>
+        <button type="button" onClick={onCancel}>Cancel</button>
+      </div>
     </form>
   )
 }

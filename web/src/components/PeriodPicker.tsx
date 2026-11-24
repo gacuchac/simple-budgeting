@@ -28,12 +28,13 @@ export function PeriodPicker({ value, onChange }: { value: DashboardPeriod; onCh
   }
 
   return (
-    <fieldset>
+    <fieldset className="toolbar">
       <legend>Period</legend>
-      <select aria-label="Period type" value={mode} onChange={(e) => switchMode(e.target.value)}>
-        <option value="last">Last N</option>
-        <option value="range">Calendar dates</option>
-      </select>
+      <div className="segmented" role="group" aria-label="Period type">
+        <button type="button" aria-pressed={mode === 'last'} onClick={() => switchMode('last')}>Last N</button>
+        <button type="button" aria-pressed={mode === 'range'} onClick={() => switchMode('range')}>Calendar dates</button>
+      </div>
+      <div className="toolbar-fields">
       {mode === 'last' ? (
         <>
           <input aria-label="N" type="number" min={1} value={last} onChange={(e) => applyLast(e.target.value, unit)} />
@@ -47,6 +48,7 @@ export function PeriodPicker({ value, onChange }: { value: DashboardPeriod; onCh
           <label>To <input type="date" value={end} onChange={(e) => applyRange(start, e.target.value)} /></label>
         </>
       )}
+      </div>
     </fieldset>
   )
 }

@@ -20,33 +20,35 @@ export function RuleEditor({ value, onChange, shapes, today }: {
   today: string
 }) {
   return (
-    <fieldset>
+    <fieldset className="rule-editor">
       <legend>Repeats</legend>
       <select aria-label="Rule" value={value.shape} onChange={(e) => onChange(blank(e.target.value as RuleForm['shape'], today))}>
         {shapes !== 'recurring' && <option value="one_off">One-off</option>}
         {shapes !== 'one_off' && <option value="every">Every N days, weeks or months</option>}
         {shapes !== 'one_off' && <option value="monthly_on_day">Monthly on a day</option>}
       </select>
+      <div className="form-grid">
       {value.shape === 'one_off' && (
-        <label>Date <input type="date" value={value.date} onChange={(e) => onChange({ ...value, date: e.target.value })} required /></label>
+        <label className="field">Date <input type="date" value={value.date} onChange={(e) => onChange({ ...value, date: e.target.value })} required /></label>
       )}
       {value.shape === 'every' && (
         <>
-          <label>Every <input type="number" min={1} value={value.n} onChange={(e) => onChange({ ...value, n: e.target.value })} required /></label>
+          <label className="field">Every <input type="number" min={1} value={value.n} onChange={(e) => onChange({ ...value, n: e.target.value })} required /></label>
           <select aria-label="Unit" value={value.unit} onChange={(e) => onChange({ ...value, unit: e.target.value as (typeof UNITS)[number] })}>
             {UNITS.map((u) => <option key={u} value={u}>{u}s</option>)}
           </select>
         </>
       )}
       {value.shape === 'monthly_on_day' && (
-        <label>Day of month <input type="number" min={1} max={31} value={value.day} onChange={(e) => onChange({ ...value, day: e.target.value })} required /></label>
+        <label className="field">Day of month <input type="number" min={1} max={31} value={value.day} onChange={(e) => onChange({ ...value, day: e.target.value })} required /></label>
       )}
       {value.shape !== 'one_off' && (
         <>
-          <label>Start <input type="date" value={value.start} onChange={(e) => onChange({ ...value, start: e.target.value })} required /></label>
-          <label>End (optional) <input type="date" value={value.end} onChange={(e) => onChange({ ...value, end: e.target.value })} /></label>
+          <label className="field">Start <input type="date" value={value.start} onChange={(e) => onChange({ ...value, start: e.target.value })} required /></label>
+          <label className="field">End (optional) <input type="date" value={value.end} onChange={(e) => onChange({ ...value, end: e.target.value })} /></label>
         </>
       )}
+      </div>
     </fieldset>
   )
 }

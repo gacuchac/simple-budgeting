@@ -1,9 +1,11 @@
-const PALETTE = ['#4e79a7', '#f28e2b', '#76b7b2', '#b07aa1', '#edc948', '#9c755f', '#59a14f', '#ff9da7', '#86bcb6', '#bab0ac']
+const SLOTS = 8
 
-export const REMAINING_COLOUR = '#e0e0e0'
-export const UNCATEGORIZED_COLOUR = '#999999'
+export const REMAINING_COLOUR = 'var(--remaining)'
+export const UNCATEGORIZED_COLOUR = 'var(--cat-other)'
+export const INCOME_COLOUR = 'var(--cat-1)'
+export const EXPENSE_COLOUR = 'var(--cat-2)'
 
-/** A colour for a category that depends only on its id, so it never changes between periods; null is uncategorized. */
+/** The theme colour for a category: its id picks one of the 8 slots, so it never changes when other categories come or go; null (Uncategorized) is grey. */
 export function categoryColour(categoryId: number | null): string {
-  return categoryId === null ? UNCATEGORIZED_COLOUR : PALETTE[categoryId % PALETTE.length]
+  return categoryId === null ? UNCATEGORIZED_COLOUR : `var(--cat-${(categoryId % SLOTS) + 1})`
 }
