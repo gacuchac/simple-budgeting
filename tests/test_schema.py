@@ -35,6 +35,8 @@ EXPECTED = {
             "every_unit IN ('day','week','month')",
             "every_n >= 1",
             "month_day BETWEEN 1 AND 31",
+            "source IS NULL OR kind = 'income'",
+            "end_date IS NULL OR end_date >= start_date",
         ],
     },
 }
