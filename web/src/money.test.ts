@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { formatUsd, parseCents } from './money'
+import { centsText, formatUsd, parseCents } from './money'
 
 test('parseCents turns dollar strings into integer cents', () => {
   expect(parseCents('12')).toBe(1200)
@@ -17,4 +17,9 @@ test('parseCents rejects more than two decimals and non-numbers', () => {
 
 test('formatUsd formats cents as dollars', () => {
   expect(formatUsd(123456)).toBe('$1,234.56')
+})
+
+test('centsText formats cents as an editable amount', () => {
+  expect(centsText(123456)).toBe('1234.56')
+  expect(centsText(705)).toBe('7.05')
 })

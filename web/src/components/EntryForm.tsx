@@ -3,7 +3,7 @@ import type { Category, Entry, EntryIn } from '../api/client'
 import { today as todayIso } from '../dates'
 import { useLimitCheck } from '../hooks/useLimitCheck'
 import { useAddEntry, useReplaceEntry, useSplitEntry } from '../hooks/useWrites'
-import { parseCents } from '../money'
+import { centsText, parseCents } from '../money'
 import { fromRule, toRule, type RuleForm } from '../rule'
 import { LimitWarning } from './LimitWarning'
 import { RuleEditor } from './RuleEditor'
@@ -15,10 +15,6 @@ type Props = {
   entry?: Entry
   onDone: () => void
   onCancel: () => void
-}
-
-function centsText(cents: number): string {
-  return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`
 }
 
 export function EntryForm({ budgetId, kind, categories, entry, onDone, onCancel }: Props) {

@@ -13,3 +13,8 @@ const USD = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' 
 export function formatUsd(cents: number): string {
   return USD.format(cents / 100)
 }
+
+/** Format integer cents as a plain editable amount, for example 123456 as "1234.56". */
+export function centsText(cents: number): string {
+  return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`
+}

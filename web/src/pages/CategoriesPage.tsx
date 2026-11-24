@@ -4,12 +4,20 @@ import { categoryColour } from '../colours'
 import { useBudget } from '../hooks/useBudget'
 import { LimitEditor } from '../components/LimitEditor'
 import { useCategories } from '../hooks/useCategories'
+import type { Loaded } from '../hooks/useAsync'
 import { useLimits } from '../hooks/useLimits'
 import { useAddCategory, useDeleteCategory, useRenameCategory } from '../hooks/useWrites'
 
-type RowProps = { category: Category; colour: string; canEdit: boolean; onChanged: () => void; budgetId: number; limit: Limit | undefined; onLimitChanged: () => void }
+type RowProps = { category: Category; colour: string; canEdit: boolean; onChanged: () => void; budgetId: number; limits: Loaded<Limit[]> }
 
-function CategoryRow({ category, colour, canEdit, onChanged, budgetId, limit, onLimitChanged }: RowProps) {
+function RowLimit({ budgetId, categoryId, limits }: { budgetId: number; categoryId: number; limits: Loaded<Limit[]> }) {
+  if (limits.loading) return <span className="status-message">Loading limit...</span>
+  if (limits.error) return <span className="alert" role="alert">{limits.error.message}</span>
+  const limit = limits.data?.find((l) => l.category_id === categoryId)
+  return <LimitEditor key={limit ? `${limit.id}-${limit.amount_cents}-${limit.period}` : 'none'} budgetId={budgetId} categoryId={categoryId} limit={limit} onChanged={limits.reload} />
+}
+
+function CategoryRow({ category, colour, canEdit, onChanged, budgetId, limits }: RowProps) {
   const rename = useRenameCategory()
   const remove = useDeleteCategory()
   const onRename = async () => {
@@ -30,9 +38,7 @@ function CategoryRow({ category, colour, canEdit, onChanged, budgetId, limit, on
         </>
       )}
       {(rename.error ?? remove.error) && <span className="alert" role="alert">{rename.error ?? remove.error}</span>}
-      {canEdit && category.kind === 'expense' && (
-        <LimitEditor key={limit ? `${limit.id}-${limit.amount_cents}-${limit.period}` : 'none'} budgetId={budgetId} categoryId={category.id} limit={limit} onChanged={onLimitChanged} />
-      )}
+      {canEdit && category.kind === 'expense' && <RowLimit budgetId={budgetId} categoryId={category.id} limits={limits} />}
     </li>
   )
 }
@@ -70,7 +76,7 @@ export function CategoriesPage() {
           <div className="card-head"><h2>{kind === 'income' ? 'Income categories' : 'Expense categories'}</h2></div>
           <ul className="rows">
             {all.filter((c) => c.kind === kind).map((c) => (
-              <CategoryRow key={c.id} category={c} colour={categoryColour(c.id)} canEdit={canEdit} budgetId={budget.id} onChanged={() => { categories.reload(); limits.reload() }} limit={limits.data?.find((l) => l.category_id === c.id)} onLimitChanged={limits.reload} />
+              <CategoryRow key={c.id} category={c} colour={categoryColour(c.id)} canEdit={canEdit} budgetId={budget.id} onChanged={() => { categories.reload(); limits.reload() }} limits={limits} />
             ))}
           </ul>
           {canEdit && <AddCategory budgetId={budget.id} kind={kind} onAdded={categories.reload} />}

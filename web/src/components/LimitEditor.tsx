@@ -1,15 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import type { Limit, PeriodUnit } from '../api/client'
 import { useDeleteLimit, useSetLimit } from '../hooks/useWrites'
-import { formatUsd, parseCents } from '../money'
+import { centsText, formatUsd, parseCents } from '../money'
 
 const PERIODS: PeriodUnit[] = ['day', 'week', 'month', 'year']
 
 type Props = { budgetId: number; categoryId: number; limit: Limit | undefined; onChanged: () => void }
-
-function centsText(cents: number): string {
-  return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`
-}
 
 /** Set, change or clear the spending limit of one expense category. */
 export function LimitEditor({ budgetId, categoryId, limit, onChanged }: Props) {
