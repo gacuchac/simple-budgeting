@@ -2,10 +2,12 @@ import { useState } from 'react'
 import type { DashboardPeriod } from '../api/client'
 import { DonutChart } from '../components/DonutChart'
 import { LineChart } from '../components/LineChart'
+import { OverLimitList } from '../components/OverLimitList'
 import { PeriodPicker } from '../components/PeriodPicker'
 import { categoryColour } from '../colours'
 import { currentMonth } from '../dates'
 import { useBudget } from '../hooks/useBudget'
+import { useCategories } from '../hooks/useCategories'
 import { useDashboard } from '../hooks/useDashboard'
 import { formatUsd } from '../money'
 
@@ -27,6 +29,7 @@ export function DashboardPage() {
   const { budget } = useBudget()
   const [period, setPeriod] = useState<DashboardPeriod>(currentMonth)
   const { data, error, loading } = useDashboard(budget.id, period)
+  const categories = useCategories(budget.id)
 
   return (
     <>
@@ -49,6 +52,7 @@ export function DashboardPage() {
             </div>
             <NetTile netCents={data.income_cents - data.expense_cents} />
           </div>
+          <OverLimitList limits={data.limits} categories={categories.data ?? []} />
           {data.income_cents === 0 && data.expense_cents === 0 ? (
             <div className="card empty-card">
               <p>No income or expenses in this period. Add entries on the Entries page.</p>

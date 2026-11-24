@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import type { Category, Entry, EntryIn } from '../api/client'
 import { today as todayIso } from '../dates'
+import { useLimitCheck } from '../hooks/useLimitCheck'
 import { useAddEntry, useReplaceEntry, useSplitEntry } from '../hooks/useWrites'
 import { parseCents } from '../money'
 import { fromRule, toRule, type RuleForm } from '../rule'
+import { LimitWarning } from './LimitWarning'
 import { RuleEditor } from './RuleEditor'
 
 type Props = {
@@ -36,6 +38,14 @@ export function EntryForm({ budgetId, kind, categories, entry, onDone, onCancel 
   const split = useSplitEntry()
   const write = entry ? (recurring ? split : replace) : add
   const error = problem ?? write.error
+  const checkedCents = parseCents(amount)
+  const checkedDate = rule.shape === 'one_off' ? rule.date : rule.start
+  const limitStatus = useLimitCheck(
+    budgetId,
+    kind === 'expense' && categoryId !== null && checkedCents !== null && checkedCents > 0 && checkedDate
+      ? { categoryId, date: checkedDate, amountCents: checkedCents, excludeEntryId: entry?.id }
+      : null,
+  )
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -82,6 +92,7 @@ export function EntryForm({ budgetId, kind, categories, entry, onDone, onCancel 
       </div>
       <RuleEditor value={rule} onChange={setRule} shapes={editing ? (recurring ? 'recurring' : 'one_off') : 'all'} today={today} />
       {recurring && <label className="field">Apply changes from <input type="date" value={at} onChange={(e) => setAt(e.target.value)} required /></label>}
+      <LimitWarning status={limitStatus} />
       {error && <p className="alert" role="alert">{error}</p>}
       <div className="form-actions">
         <button type="submit" disabled={write.busy}>Save</button>

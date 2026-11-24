@@ -1,11 +1,15 @@
 import { useState, type FormEvent } from 'react'
-import type { Category } from '../api/client'
+import type { Category, Limit } from '../api/client'
 import { categoryColour } from '../colours'
 import { useBudget } from '../hooks/useBudget'
+import { LimitEditor } from '../components/LimitEditor'
 import { useCategories } from '../hooks/useCategories'
+import { useLimits } from '../hooks/useLimits'
 import { useAddCategory, useDeleteCategory, useRenameCategory } from '../hooks/useWrites'
 
-function CategoryRow({ category, colour, canEdit, onChanged, budgetId }: { category: Category; colour: string; canEdit: boolean; onChanged: () => void; budgetId: number }) {
+type RowProps = { category: Category; colour: string; canEdit: boolean; onChanged: () => void; budgetId: number; limit: Limit | undefined; onLimitChanged: () => void }
+
+function CategoryRow({ category, colour, canEdit, onChanged, budgetId, limit, onLimitChanged }: RowProps) {
   const rename = useRenameCategory()
   const remove = useDeleteCategory()
   const onRename = async () => {
@@ -26,6 +30,9 @@ function CategoryRow({ category, colour, canEdit, onChanged, budgetId }: { categ
         </>
       )}
       {(rename.error ?? remove.error) && <span className="alert" role="alert">{rename.error ?? remove.error}</span>}
+      {canEdit && category.kind === 'expense' && (
+        <LimitEditor key={limit ? `${limit.id}-${limit.amount_cents}-${limit.period}` : 'none'} budgetId={budgetId} categoryId={category.id} limit={limit} onChanged={onLimitChanged} />
+      )}
     </li>
   )
 }
@@ -52,6 +59,7 @@ function AddCategory({ budgetId, kind, onAdded }: { budgetId: number; kind: Cate
 export function CategoriesPage() {
   const { budget, canEdit } = useBudget()
   const categories = useCategories(budget.id)
+  const limits = useLimits(budget.id)
   if (categories.loading) return <p className="status-message">Loading...</p>
   if (categories.error) return <p className="status-message alert" role="alert">{categories.error.message}</p>
   const all = categories.data ?? []
@@ -62,7 +70,7 @@ export function CategoriesPage() {
           <div className="card-head"><h2>{kind === 'income' ? 'Income categories' : 'Expense categories'}</h2></div>
           <ul className="rows">
             {all.filter((c) => c.kind === kind).map((c) => (
-              <CategoryRow key={c.id} category={c} colour={categoryColour(c.id)} canEdit={canEdit} budgetId={budget.id} onChanged={categories.reload} />
+              <CategoryRow key={c.id} category={c} colour={categoryColour(c.id)} canEdit={canEdit} budgetId={budget.id} onChanged={() => { categories.reload(); limits.reload() }} limit={limits.data?.find((l) => l.category_id === c.id)} onLimitChanged={limits.reload} />
             ))}
           </ul>
           {canEdit && <AddCategory budgetId={budget.id} kind={kind} onAdded={categories.reload} />}
