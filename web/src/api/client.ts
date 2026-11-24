@@ -11,6 +11,10 @@ export type EntryChanges = components['schemas']['EntryChanges']
 export type Rule = EntryIn['rule']
 export type SplitResult = components['schemas']['SplitOut']
 export type Dashboard = components['schemas']['DashboardOut']
+export type Limit = components['schemas']['LimitOut']
+export type LimitIn = components['schemas']['LimitIn']
+export type LimitStatus = components['schemas']['LimitStatusOut']
+export type LimitCheck = { categoryId: number; date: string; amountCents: number; excludeEntryId?: number }
 export type PeriodUnit = 'day' | 'week' | 'month' | 'year'
 export type DashboardPeriod = { last: number; unit: PeriodUnit } | { start: string; end: string }
 
@@ -57,6 +61,8 @@ function periodQuery(period: DashboardPeriod): string {
 const entriesPath = (budgetId: number) => `/api/budgets/${budgetId}/entries`
 const categoriesPath = (budgetId: number) => `/api/budgets/${budgetId}/categories`
 
+const limitsPath = (budgetId: number) => `/api/budgets/${budgetId}/limits`
+
 export const api = {
   me: () => request<Account>('GET', '/api/me'),
   budgets: () => request<Budget[]>('GET', '/api/budgets'),
@@ -75,6 +81,15 @@ export const api = {
   deleteEntry: (budgetId: number, id: number) => request<void>('DELETE', `${entriesPath(budgetId)}/${id}`),
   splitEntry: (budgetId: number, id: number, at: string, changes: EntryChanges) =>
     request<SplitResult>('POST', `${entriesPath(budgetId)}/${id}/split`, { at, changes }),
+  limits: (budgetId: number) => request<Limit[]>('GET', limitsPath(budgetId)),
+  setLimit: (budgetId: number, body: LimitIn) => request<Limit>('PUT', limitsPath(budgetId), body),
+  deleteLimit: (budgetId: number, id: number) => request<void>('DELETE', `${limitsPath(budgetId)}/${id}`),
+  checkLimit: async (budgetId: number, check: LimitCheck): Promise<LimitStatus | null> => {
+    const params = new URLSearchParams({ category_id: String(check.categoryId), date: check.date, amount_cents: String(check.amountCents) })
+    if (check.excludeEntryId !== undefined) params.set('exclude_entry_id', String(check.excludeEntryId))
+    const result = await request<components['schemas']['LimitCheckOut']>('GET', `${limitsPath(budgetId)}/check?${params}`)
+    return result.status
+  },
   dashboard: (budgetId: number, period: DashboardPeriod) =>
     request<Dashboard>('GET', `/api/budgets/${budgetId}/dashboard?${periodQuery(period)}`),
 }
