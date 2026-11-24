@@ -36,7 +36,8 @@ def _apply(conn: sqlite3.Connection, number: int, sql: str) -> None:
             raise sqlite3.IntegrityError(f"migration {number:04d} violates foreign keys: {violations}")
         conn.execute("COMMIT")
     except BaseException:
-        conn.execute("ROLLBACK")
+        if conn.in_transaction:
+            conn.execute("ROLLBACK")
         raise
 
 
