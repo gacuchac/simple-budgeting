@@ -15,5 +15,34 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m pip install -r requirements-dev.txt
-      - run: python -m pytest -q
+      - run: python -m pip install -r requirements.txt -r requirements-dev.txt
+      - run: python -m pytest -q -s
+
+  web:
+    name: web (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: S10-b node 24 + npm ci
+            node: "24"
+            install: npm ci
+          - variant: S10-c node 26 + npm install
+            node: "26"
+            install: npm install
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: node -v && npm -v
+      - run: ${{ matrix.install }}
+      - run: git status --porcelain -- package-lock.json && git diff --stat -- package-lock.json
+      - run: npm run build
+      - run: npx vitest run
