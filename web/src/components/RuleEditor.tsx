@@ -13,19 +13,19 @@ function blank(shape: RuleForm['shape'], date: string): RuleForm {
   }
 }
 
-export function RuleEditor({ value, onChange, allowOneOff, today }: {
+export function RuleEditor({ value, onChange, shapes, today }: {
   value: RuleForm
   onChange: (next: RuleForm) => void
-  allowOneOff: boolean
+  shapes: 'all' | 'one_off' | 'recurring'
   today: string
 }) {
   return (
     <fieldset>
       <legend>Repeats</legend>
       <select aria-label="Rule" value={value.shape} onChange={(e) => onChange(blank(e.target.value as RuleForm['shape'], today))}>
-        {allowOneOff && <option value="one_off">One-off</option>}
-        <option value="every">Every N days, weeks or months</option>
-        <option value="monthly_on_day">Monthly on a day</option>
+        {shapes !== 'recurring' && <option value="one_off">One-off</option>}
+        {shapes !== 'one_off' && <option value="every">Every N days, weeks or months</option>}
+        {shapes !== 'one_off' && <option value="monthly_on_day">Monthly on a day</option>}
       </select>
       {value.shape === 'one_off' && (
         <label>Date <input type="date" value={value.date} onChange={(e) => onChange({ ...value, date: e.target.value })} required /></label>

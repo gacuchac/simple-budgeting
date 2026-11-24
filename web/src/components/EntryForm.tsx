@@ -21,7 +21,8 @@ function centsText(cents: number): string {
 
 export function EntryForm({ budgetId, kind, categories, entry, onDone, onCancel }: Props) {
   const today = todayIso()
-  const recurring = entry !== undefined && entry.rule.type !== 'one_off'
+  const editing = entry !== undefined
+  const recurring = editing && entry.rule.type !== 'one_off'
   const options = categories.filter((c) => c.kind === kind)
   const [name, setName] = useState(entry?.name ?? '')
   const [amount, setAmount] = useState(entry ? centsText(entry.amount_cents) : '')
@@ -77,7 +78,7 @@ export function EntryForm({ budgetId, kind, categories, entry, onDone, onCancel 
           {options.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </label>
-      <RuleEditor value={rule} onChange={setRule} allowOneOff={!recurring} today={today} />
+      <RuleEditor value={rule} onChange={setRule} shapes={editing ? (recurring ? 'recurring' : 'one_off') : 'all'} today={today} />
       {recurring && <label>Apply changes from <input type="date" value={at} onChange={(e) => setAt(e.target.value)} required /></label>}
       {error && <p role="alert">{error}</p>}
       <button type="submit" disabled={write.busy}>Save</button>

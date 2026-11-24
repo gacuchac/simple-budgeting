@@ -8,7 +8,13 @@ export function PeriodPicker({ value, onChange }: { value: DashboardPeriod; onCh
   const [unit, setUnit] = useState<PeriodUnit>('last' in value ? value.unit : 'month')
   const [start, setStart] = useState('start' in value ? value.start : '')
   const [end, setEnd] = useState('start' in value ? value.end : '')
-  const mode = 'last' in value ? 'last' : 'range'
+  const [mode, setMode] = useState<'last' | 'range'>('last' in value ? 'last' : 'range')
+  const switchMode = (next: string) => {
+    const nextMode = next === 'last' ? 'last' : 'range'
+    setMode(nextMode)
+    if (nextMode === 'last') applyLast(last, unit)
+    else applyRange(start, end)
+  }
 
   const applyLast = (n: string, u: PeriodUnit) => {
     setLast(n)
@@ -24,7 +30,7 @@ export function PeriodPicker({ value, onChange }: { value: DashboardPeriod; onCh
   return (
     <fieldset>
       <legend>Period</legend>
-      <select aria-label="Period type" value={mode} onChange={(e) => (e.target.value === 'last' ? applyLast(last, unit) : applyRange(start, end))}>
+      <select aria-label="Period type" value={mode} onChange={(e) => switchMode(e.target.value)}>
         <option value="last">Last N</option>
         <option value="range">Calendar dates</option>
       </select>
