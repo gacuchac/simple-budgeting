@@ -43,6 +43,10 @@ EXPECTED = {
         "fks": {("budget_id", "budgets"): "CASCADE", ("category_id", "categories"): "CASCADE"},
         "checks": ["period IN ('day','week','month','year')", "amount_cents > 0"],
     },
+    "invites": {
+        "fks": {("budget_id", "budgets"): "CASCADE", ("invited_by", "users"): "CASCADE"},
+        "checks": ["status IN ('pending','accepted','declined')"],
+    },
 }
 
 ONE_OFF = {"rule_type": "one_off", "start_date": "2026-03-10"}
@@ -121,9 +125,9 @@ def count(conn: sqlite3.Connection, table: str) -> int:
 
 def test_us4_migrate_creates_schema_at_the_latest_version_and_rerun_changes_nothing(tmp_path):
     conn = connect(tmp_path / "budget.sqlite3")
-    assert migrate(conn) == 2
+    assert migrate(conn) == 3
     before = schema(conn)
-    assert migrate(conn) == 2
+    assert migrate(conn) == 3
     assert schema(conn) == before
     tables = {row[1] for row in before if row[0] == "table"}
     assert set(EXPECTED) <= tables
