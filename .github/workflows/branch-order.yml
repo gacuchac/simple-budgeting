@@ -1,0 +1,25 @@
+name: branch-order
+
+on:
+  pull_request_target:
+    branches: [main, uat, dev]
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  branch-order:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the target branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check the source branch
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPO: ${{ github.repository }}
+        run: python3 scripts/ci/check_branch_order.py

@@ -1,0 +1,7 @@
+evals/runs/
+__pycache__/
+.pytest_cache/
+.venv/
+.env
+.humanlayer/
+docs/planning/*/spikes/
