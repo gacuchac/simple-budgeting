@@ -19,14 +19,19 @@ function EntryRow({ entry, categoryName, canEdit, onEdit, onDelete }: {
 }) {
   return (
     <li>
-      {entry.name}: {formatUsd(entry.amount_cents)}, {categoryName}
-      {entry.source ? `, from ${entry.source}` : ''}, {describeRule(entry.rule)}
+      <div className="row-main">
+        <div className="row-name">{entry.name}</div>
+        <div className="row-sub">
+          {categoryName}
+          {entry.source ? ` · from ${entry.source}` : ''} · {describeRule(entry.rule)}
+        </div>
+      </div>
+      <div className="row-amount">{formatUsd(entry.amount_cents)}</div>
       {canEdit && (
-        <>
-          {' '}
-          <button onClick={onEdit}>Edit</button>
-          <button onClick={onDelete}>Delete</button>
-        </>
+        <div className="row-actions">
+          <button className="ghost" onClick={onEdit}>Edit</button>
+          <button className="ghost danger" onClick={onDelete}>Delete</button>
+        </div>
       )}
     </li>
   )
@@ -39,8 +44,8 @@ export function EntriesPage() {
   const remove = useDeleteEntry()
   const [editing, setEditing] = useState<Editing>(null)
 
-  if (entries.loading || categories.loading) return <p>Loading...</p>
-  if (entries.error || categories.error) return <p role="alert">{(entries.error ?? categories.error)?.message}</p>
+  if (entries.loading || categories.loading) return <p className="status-message">Loading...</p>
+  if (entries.error || categories.error) return <p className="status-message alert" role="alert">{(entries.error ?? categories.error)?.message}</p>
 
   const names = new Map((categories.data ?? []).map((c) => [c.id, c.name]))
   const done = () => {
@@ -52,14 +57,17 @@ export function EntriesPage() {
   }
 
   return (
-    <div>
+    <div className="cols">
       {(['income', 'expense'] as const).map((kind) => {
         const rows = (entries.data ?? []).filter((e) => e.kind === kind)
         return (
-          <section key={kind}>
-            <h2>{kind === 'income' ? 'Income' : 'Expenses'}</h2>
-            {rows.length === 0 && <p>No {kind} entries yet.</p>}
-            <ul>
+          <section className="card" key={kind}>
+            <div className="card-head">
+              <h2>{kind === 'income' ? 'Income' : 'Expenses'}</h2>
+              {canEdit && <button className="primary" onClick={() => setEditing({ kind })}>Add {kind}</button>}
+            </div>
+            {rows.length === 0 && <p className="empty">No {kind} entries yet.</p>}
+            <ul className="rows">
               {rows.map((e) => (
                 <EntryRow
                   key={e.id}
@@ -71,7 +79,6 @@ export function EntriesPage() {
                 />
               ))}
             </ul>
-            {canEdit && <button onClick={() => setEditing({ kind })}>Add {kind}</button>}
             {editing?.kind === kind && (
               <EntryForm
                 key={editing.entry?.id ?? 'new'}
@@ -86,7 +93,7 @@ export function EntriesPage() {
           </section>
         )
       })}
-      {remove.error && <p role="alert">{remove.error}</p>}
+      {remove.error && <p className="alert" role="alert">{remove.error}</p>}
     </div>
   )
 }

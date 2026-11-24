@@ -25,7 +25,15 @@ function Page() {
 function Header({ budgets, email }: { budgets: ReturnType<typeof useBudgets>['data']; email?: string }) {
   const { budget, select } = useBudget()
   return (
-    <header>
+    <header className="topbar">
+      <div className="topbar-inner">
+      <span className="brand">Budget</span>
+      <nav className="nav">
+        {LINKS.map((l) => (
+          <a key={l.href} href={l.href} aria-current={window.location.pathname === l.href ? 'page' : undefined}>{l.label}</a>
+        ))}
+      </nav>
+      <div className="topbar-end">
       <select aria-label="Budget" value={budget.id} onChange={(e) => select(Number(e.target.value))}>
         {(budgets ?? []).map((b) => (
           <option key={b.id} value={b.id}>
@@ -33,13 +41,10 @@ function Header({ budgets, email }: { budgets: ReturnType<typeof useBudgets>['da
           </option>
         ))}
       </select>
-      <nav>
-        {LINKS.map((l) => (
-          <a key={l.href} href={l.href} aria-current={window.location.pathname === l.href ? 'page' : undefined}>{l.label} </a>
-        ))}
-      </nav>
-      <span> {email} </span>
+      <span className="email">{email}</span>
       <a href="/signout">Sign out</a>
+      </div>
+      </div>
     </header>
   )
 }
@@ -48,14 +53,14 @@ export function Shell() {
   const me = useMe()
   const budgets = useBudgets()
 
-  if (me.loading || budgets.loading) return <p>Loading...</p>
-  if (me.error || budgets.error) return <p role="alert">{(me.error ?? budgets.error)?.message}</p>
-  if (!budgets.data?.length) return <p>No budgets yet.</p>
+  if (me.loading || budgets.loading) return <p className="status-message">Loading...</p>
+  if (me.error || budgets.error) return <p className="status-message alert" role="alert">{(me.error ?? budgets.error)?.message}</p>
+  if (!budgets.data?.length) return <p className="status-message">No budgets yet.</p>
 
   return (
     <BudgetProvider budgets={budgets.data}>
       <Header budgets={budgets.data} email={me.data?.email} />
-      <main>
+      <main className="page">
         <Page />
       </main>
     </BudgetProvider>

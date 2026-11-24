@@ -11,17 +11,20 @@ export function CredentialsForm({ title, hook, alt }: { title: string; hook: Sub
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <main className="auth">
+    <form className="card auth-card" onSubmit={onSubmit}>
+      <span className="brand">Budget</span>
       <h1>{title}</h1>
-      <label>
+      <label className="field">
         Email <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
       </label>
-      <label>
+      <label className="field">
         Password <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       </label>
-      {hook.error && <p role="alert">{hook.error}</p>}
+      {hook.error && <p className="alert" role="alert">{hook.error}</p>}
       <button type="submit" disabled={hook.busy}>{title}</button>
-      <p><a href={alt.href}>{alt.text}</a></p>
+      <p className="auth-alt"><a href={alt.href}>{alt.text}</a></p>
     </form>
+    </main>
   )
 }

@@ -1,9 +1,17 @@
-const PALETTE = ['#4e79a7', '#f28e2b', '#76b7b2', '#b07aa1', '#edc948', '#9c755f', '#59a14f', '#ff9da7', '#86bcb6', '#bab0ac']
+const SLOTS = 8
 
-export const REMAINING_COLOUR = '#e0e0e0'
-export const UNCATEGORIZED_COLOUR = '#999999'
+export const REMAINING_COLOUR = 'var(--remaining)'
+export const UNCATEGORIZED_COLOUR = 'var(--cat-other)'
+export const INCOME_COLOUR = 'var(--cat-1)'
+export const EXPENSE_COLOUR = 'var(--cat-2)'
 
-/** A colour for a category that depends only on its id, so it never changes between periods; null is uncategorized. */
-export function categoryColour(categoryId: number | null): string {
-  return categoryId === null ? UNCATEGORIZED_COLOUR : PALETTE[categoryId % PALETTE.length]
+/** The theme colour for a category's position in the budget's category list: slots 1 to 8, then grey. */
+export function slotColour(position: number): string {
+  return position >= 0 && position < SLOTS ? `var(--cat-${position + 1})` : UNCATEGORIZED_COLOUR
+}
+
+/** A colour lookup that follows each category's stable position in `categories` (pass one kind's list); null, unknown ids and positions beyond 8 are grey. */
+export function categoryColours(categories: { id: number }[]): (categoryId: number | null) => string {
+  const positions = new Map(categories.map((c, i) => [c.id, i]))
+  return (categoryId) => (categoryId === null ? UNCATEGORIZED_COLOUR : slotColour(positions.get(categoryId) ?? -1))
 }

@@ -15,10 +15,10 @@ export function SignOutPage() {
   }, [])
   if (failed) {
     return (
-      <p>
+      <p className="status-message">
         Sign-out failed, so you are still signed in. <a href="/signout">Try again</a>
       </p>
     )
   }
-  return <p>Signing out...</p>
+  return <p className="status-message">Signing out...</p>
 }
