@@ -96,7 +96,7 @@ button.danger { color: var(--critical); }
 .chart-title { margin-bottom: 12px; }
 .donut { margin: 0; display: grid; gap: 12px; justify-items: center; }
 .donut-wrap { position: relative; max-width: 100%; }
-.donut-centre {
+.donut-wrap svg { overflow: visible; }.donut-centre {
   position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none;
 }
 .donut-centre strong { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }

@@ -3,10 +3,9 @@ import type { DashboardPeriod } from '../api/client'
 import { DonutChart } from '../components/DonutChart'
 import { LineChart } from '../components/LineChart'
 import { PeriodPicker } from '../components/PeriodPicker'
-import { categoryColours } from '../colours'
+import { categoryColour } from '../colours'
 import { currentMonth } from '../dates'
 import { useBudget } from '../hooks/useBudget'
-import { useCategories } from '../hooks/useCategories'
 import { useDashboard } from '../hooks/useDashboard'
 import { formatUsd } from '../money'
 
@@ -28,8 +27,6 @@ export function DashboardPage() {
   const { budget } = useBudget()
   const [period, setPeriod] = useState<DashboardPeriod>(currentMonth)
   const { data, error, loading } = useDashboard(budget.id, period)
-  const categories = useCategories(budget.id)
-  const colours = categoryColours((categories.data ?? []).filter((c) => c.kind === 'expense'))
 
   return (
     <>
@@ -61,7 +58,7 @@ export function DashboardPage() {
             <div className="charts">
               <section className="card">
                 <h2 className="chart-title">Expenses by category</h2>
-                <DonutChart donut={data.donut} colours={colours} />
+                <DonutChart donut={data.donut} colours={categoryColour} />
               </section>
               <section className="card">
                 <h2 className="chart-title">Cumulative income and expenses</h2>

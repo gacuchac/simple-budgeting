@@ -6,8 +6,8 @@ import { formatUsd } from '../money'
 export type Donut = Dashboard['donut']
 
 export const MARK_WIDTH_DEGREES = 3
-const MARK_COLOUR = '#d03b3b'
-const SIZE = 280
+const MARK_COLOUR = 'var(--critical)'
+const SIZE = 360
 const RING_INNER = 98
 const RING_OUTER = 120
 const LABEL_GAP = 14

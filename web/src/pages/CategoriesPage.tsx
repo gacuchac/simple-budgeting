@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { Category } from '../api/client'
-import { categoryColours } from '../colours'
+import { categoryColour } from '../colours'
 import { useBudget } from '../hooks/useBudget'
 import { useCategories } from '../hooks/useCategories'
 import { useAddCategory, useDeleteCategory, useRenameCategory } from '../hooks/useWrites'
@@ -55,10 +55,6 @@ export function CategoriesPage() {
   if (categories.loading) return <p className="status-message">Loading...</p>
   if (categories.error) return <p className="status-message alert" role="alert">{categories.error.message}</p>
   const all = categories.data ?? []
-  const colourOf = {
-    income: categoryColours(all.filter((c) => c.kind === 'income')),
-    expense: categoryColours(all.filter((c) => c.kind === 'expense')),
-  }
   return (
     <div className="cols">
       {(['income', 'expense'] as const).map((kind) => (
@@ -66,7 +62,7 @@ export function CategoriesPage() {
           <div className="card-head"><h2>{kind === 'income' ? 'Income categories' : 'Expense categories'}</h2></div>
           <ul className="rows">
             {all.filter((c) => c.kind === kind).map((c) => (
-              <CategoryRow key={c.id} category={c} colour={colourOf[kind](c.id)} canEdit={canEdit} budgetId={budget.id} onChanged={categories.reload} />
+              <CategoryRow key={c.id} category={c} colour={categoryColour(c.id)} canEdit={canEdit} budgetId={budget.id} onChanged={categories.reload} />
             ))}
           </ul>
           {canEdit && <AddCategory budgetId={budget.id} kind={kind} onAdded={categories.reload} />}
