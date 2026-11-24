@@ -1,6 +1,7 @@
 """The dashboard of a budget."""
 
 import datetime as dt
+from dataclasses import asdict
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
@@ -9,6 +10,7 @@ from budget_app.api.deps import Conn, ViewAccess
 from budget_app.api.schemas import (
     DashboardOut,
     DonutOut,
+    LimitStatusOut,
     LinesOut,
     PointOut,
     RangeOut,
@@ -47,6 +49,7 @@ def _out(board: dashboard.Dashboard) -> DashboardOut:
             mark_cents=d.mark_cents,
         ),
         lines=LinesOut(unit=board.unit, points=points),
+        limits=[LimitStatusOut(**asdict(s)) for s in board.limits],
     )
 
 

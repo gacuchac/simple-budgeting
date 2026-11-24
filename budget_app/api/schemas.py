@@ -172,12 +172,43 @@ class LinesOut(BaseModel):
     points: list[PointOut]
 
 
+class LimitIn(BaseModel):
+    """Set the limit of an expense category."""
+
+    category_id: int
+    amount_cents: Cents
+    period: Literal["day", "week", "month", "year"]
+
+
+class LimitOut(LimitIn):
+    """A limit as stored."""
+
+    id: int
+    budget_id: int
+
+
+class LimitStatusOut(BaseModel):
+    """What a limit allows over a range, what was spent, and whether it is over."""
+
+    limit_id: int
+    category_id: int
+    allowed_cents: int
+    spent_cents: int
+    over: bool
+
+
+class LimitCheckOut(BaseModel):
+    """The status of the category's limit for the expense form, or None when it has no limit."""
+
+    status: LimitStatusOut | None
+
+
 class DashboardOut(BaseModel):
-    """The dashboard of a budget for one range (limits arrive with the limits feature)."""
+    """The dashboard of a budget for one range."""
 
     range: RangeOut
     income_cents: int
     expense_cents: int
     donut: DonutOut
     lines: LinesOut
-    limits: list[dict] = Field(default_factory=list)
+    limits: list[LimitStatusOut]

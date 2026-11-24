@@ -160,6 +160,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/budgets/{budget_id}/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Limits
+         * @description Return the budget's limits.
+         */
+        get: operations["list_limits_api_budgets__budget_id__limits_get"];
+        /**
+         * Set Limit
+         * @description Set the limit of an expense category, replacing its old one; 404 for an unknown category, 422 for income.
+         */
+        put: operations["set_limit_api_budgets__budget_id__limits_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budgets/{budget_id}/limits/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check Limit
+         * @description Return `{status}`: the category's limit over its own period containing `date` with `amount_cents` added.
+         *
+         *     `status` is null without a limit; 422 for a bad category, entry, amount or date.
+         */
+        get: operations["check_limit_api_budgets__budget_id__limits_check_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budgets/{budget_id}/limits/{limit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Limit
+         * @description Delete a limit; 404 when it is not in the budget.
+         */
+        delete: operations["delete_limit_api_budgets__budget_id__limits__limit_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me": {
         parameters: {
             query?: never;
@@ -324,7 +390,7 @@ export interface components {
         };
         /**
          * DashboardOut
-         * @description The dashboard of a budget for one range (limits arrive with the limits feature).
+         * @description The dashboard of a budget for one range.
          */
         DashboardOut: {
             donut: components["schemas"]["DonutOut"];
@@ -333,9 +399,7 @@ export interface components {
             /** Income Cents */
             income_cents: number;
             /** Limits */
-            limits?: {
-                [key: string]: unknown;
-            }[];
+            limits: components["schemas"]["LimitStatusOut"][];
             lines: components["schemas"]["LinesOut"];
             range: components["schemas"]["RangeOut"];
         };
@@ -444,6 +508,63 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * LimitCheckOut
+         * @description The status of the category's limit for the expense form, or None when it has no limit.
+         */
+        LimitCheckOut: {
+            status: components["schemas"]["LimitStatusOut"] | null;
+        };
+        /**
+         * LimitIn
+         * @description Set the limit of an expense category.
+         */
+        LimitIn: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** Category Id */
+            category_id: number;
+            /**
+             * Period
+             * @enum {string}
+             */
+            period: "day" | "week" | "month" | "year";
+        };
+        /**
+         * LimitOut
+         * @description A limit as stored.
+         */
+        LimitOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** Budget Id */
+            budget_id: number;
+            /** Category Id */
+            category_id: number;
+            /** Id */
+            id: number;
+            /**
+             * Period
+             * @enum {string}
+             */
+            period: "day" | "week" | "month" | "year";
+        };
+        /**
+         * LimitStatusOut
+         * @description What a limit allows over a range, what was spent, and whether it is over.
+         */
+        LimitStatusOut: {
+            /** Allowed Cents */
+            allowed_cents: number;
+            /** Category Id */
+            category_id: number;
+            /** Limit Id */
+            limit_id: number;
+            /** Over */
+            over: boolean;
+            /** Spent Cents */
+            spent_cents: number;
         };
         /**
          * LinesOut
@@ -954,6 +1075,146 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SplitOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_limits_api_budgets__budget_id__limits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LimitOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_limit_api_budgets__budget_id__limits_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LimitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LimitOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_limit_api_budgets__budget_id__limits_check_get: {
+        parameters: {
+            query: {
+                category_id: number;
+                date: string;
+                amount_cents: number;
+                exclude_entry_id?: number | null;
+            };
+            header?: never;
+            path: {
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LimitCheckOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_limit_api_budgets__budget_id__limits__limit_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                limit_id: number;
+                budget_id: number;
+            };
+            cookie?: {
+                sid?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

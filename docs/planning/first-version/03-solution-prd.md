@@ -159,7 +159,7 @@ These are the stable contracts. Changing any of them later goes through the arch
 10. **Limit check** for the expense form: `GET /api/budgets/{budget_id}/limits/check?category_id=&date=&amount_cents=[&exclude_entry_id=]` returns `{status: LimitStatus | null}`.
     - It needs `view` access, so a non-member gets 404.
     - Its range is the limit's own calendar period containing `date`: the day itself, the Monday-to-Sunday week, the calendar month or the calendar year. So `allowed_cents` is the limit's `amount_cents`.
-    - `spent_cents` is the category's expense occurrences in that range, minus every occurrence of `exclude_entry_id` in it, plus `amount_cents`.
+    - `spent_cents` is the sum of the category's expense occurrences in that range, leaving out the entry `exclude_entry_id` if it is one of them, plus `amount_cents`.
     - `over` is `spent_cents > allowed_cents`. `status` is `null` when the category has no limit.
     - It gives 422 when `category_id` isn't an expense category of this budget, `exclude_entry_id` isn't an entry of this budget, `amount_cents` is negative, or `date` isn't ISO.
     - For a recurring expense, the web passes the rule's `start` as `date`, and the amount is counted once.
