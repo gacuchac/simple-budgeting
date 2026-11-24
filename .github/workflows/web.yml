@@ -1,0 +1,30 @@
+name: web
+
+on:
+  pull_request:
+    branches: [main, uat, dev]
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - run: npm ci
+        working-directory: web
+      - run: python scripts/gen_schema.py --check
+      - run: npx vitest run
+        working-directory: web
+      - run: npm run build
+        working-directory: web
