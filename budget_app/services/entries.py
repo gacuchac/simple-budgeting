@@ -64,6 +64,8 @@ def update_one_off(conn: sqlite3.Connection, access: BudgetAccess, entry_id: int
     entry = _existing(conn, access, entry_id)
     if not isinstance(entry.rule, OneOff):
         raise InvalidEntry("a recurring entry is edited with split")
+    if not isinstance(draft.rule, OneOff):
+        raise InvalidEntry("a one-off entry stays one-off")
     _validate(conn, access, draft)
     entries.update(conn, access, entry_id, draft)
     return entries.get(conn, access, entry_id)

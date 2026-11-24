@@ -182,3 +182,15 @@ def test_non_member_gets_404_and_viewer_gets_403_on_write(app, client, base, tmp
     assert viewer.get(f"{base}/entries").status_code == 200
     assert viewer.post(f"{base}/entries", json=entry_body()).status_code == 403
     assert viewer.delete(f"{base}/categories/1").status_code == 403
+
+
+def test_split_with_null_required_field_is_422(client, base):
+    entry_id = client.post(f"{base}/entries", json=entry_body()).json()["id"]
+    resp = client.post(f"{base}/entries/{entry_id}/split", json={"at": "2026-06-01", "changes": {"amount_cents": None}})
+    assert resp.status_code == 422
+
+
+def test_put_one_off_with_recurring_rule_is_422_and_leaves_entry(client, base):
+    created = client.post(f"{base}/entries", json=entry_body(rule=one_off("2026-03-01"))).json()
+    assert client.put(f"{base}/entries/{created['id']}", json=entry_body()).status_code == 422
+    assert client.get(f"{base}/entries").json() == [created]

@@ -3,7 +3,7 @@
 import datetime as dt
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 
 class Credentials(BaseModel):
@@ -110,6 +110,13 @@ class EntryChanges(BaseModel):
     category_id: int | None = None
     source: str | None = None
     rule: Annotated[EveryRule | MonthlyOnDayRule, Field(discriminator="type")] | None = None
+
+    @model_validator(mode="after")
+    def _no_null_required_fields(self) -> "EntryChanges":
+        for field in ("name", "amount_cents"):
+            if field in self.model_fields_set and getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null")
+        return self
 
 
 class SplitIn(BaseModel):
